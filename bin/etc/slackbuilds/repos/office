@@ -1,0 +1,4 @@
+name="office"
+server="slackbuilds.org"
+directory="/14.1/office"
+comment="Slackbuilds.org office repository"

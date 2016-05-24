@@ -1,0 +1,4 @@
+name="network"
+server="slackbuilds.org"
+directory="/14.1/network"
+comment="Slackbuilds.org network repository"

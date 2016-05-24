@@ -1,0 +1,4 @@
+name="graphics"
+server="slackbuilds.org"
+directory="/14.1/graphics"
+comment="Slackbuilds.org graphics repository"

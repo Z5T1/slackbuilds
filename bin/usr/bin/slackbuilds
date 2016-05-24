@@ -1,0 +1,314 @@
+#!/bin/bash
+
+# This file is part of the slackbuilds package (github.com/z5t1/slackbuilds)
+# Version:	1.0.0
+# Author: 	Z5T1 (Z5T1@Z5T1.com)
+
+# Version & Build Variables
+SB_VERSION=1.0.0
+SB_DATE="2016-05-24"
+SB_URL="http://github.com/z5t1"
+
+# Environment Variables
+confdir="/etc/slackbuilds"
+cachedir="/var/cache/slackbuilds"
+
+#################################### FUNCTIONS #################################
+
+# Displays help for this program
+cmd_help () {
+	echo "Usage: $0 <command>"
+	echo "Manages the building and installation of packages from slackbuild repositories"
+	echo "(namely slackbuilds.org)."
+	echo
+	echo "Commands:"
+	echo "  help                Displays this message and exists"
+	echo "  version             Displays version information and exists"
+	echo "  build <package>     Build but do not install a package"
+	echo "  download <package>  Downloads the tarball for a package and saves it to /tmp,"
+	echo "                      but does nothing else"
+	echo "  info <package>      Displays information about a package"
+	echo "  install <package>   Build and install a package"
+	echo "  list-repos          Lists information about the currently active repositories"	
+	echo "  search <string>     Searches for packages whose names contain a string"
+	echo "  update              Updates the local repository cache"
+	echo 
+	echo "Optionally, whenever a package is taken as an argument, a repository can be"
+	echo "specified as a second argument. This will force use of a specific repository."	
+}
+
+# Displays pertinent version information
+cmd_version () {
+	echo "Slackbuilds Package Building Utility"
+	echo "Complements of Z5T1"
+	echo "$SB_URL"
+	echo "$SB_VERSION $SB_DATE"
+}
+
+# Displays the information (i.e. the Readme) for a given package
+# $1 = package name
+# $2 = repository (optional)
+cmd_info () {
+	if [ $# -lt 2 ]; then
+		repo=$(get_repository $1)
+	else
+		repo=$2
+	fi
+
+	source $confdir/repos/$repo
+	
+	cd /tmp
+	# Download via FTP
+	if [ -z $http ]; then
+		ftp -n $server > /dev/null 2> /dev/null << EOT
+user anonymous password
+cd $directory
+cd $1
+get README
+exit	
+EOT
+	# Download via HTTP
+	else
+		wget $server/slackbuilds$directory/$1/README > /dev/null 2> /dev/null
+	fi
+
+	cd $OLDPWD
+
+	cat /tmp/README
+	rm /tmp/README
+}
+
+# Lists the currently installed repositories along with pertinent information
+cmd_list_repos () {
+	echo
+
+	for i in $(ls $confdir/repos | grep -v '!'); do
+		source $confdir/repos/$i
+		echo -e "\033[1m$name"
+		tput sgr0
+		echo "$comment"
+		echo "Server: $server"
+		echo "Server directory: $directory"
+		echo "Socket: ftp://$server$directory"
+		echo 
+	done
+}
+
+# Searches for a package
+# $1 = string to search for
+cmd_search () {
+	check_cache
+	tabs 30
+
+	echo "Package	Repository"
+	echo "------------------------------------------------------------"
+
+	for i in $(ls $confdir/repos | grep -v '!'); do
+		source $confdir/repos/$i
+
+		for i2 in $(cat $cachedir/repocache/$i); do
+			if [[ ${i2,,} == *"${1,,}"* ]]; then
+				echo "$i2	$i"
+			fi
+		done
+	done
+
+	echo
+}
+
+# Updates the local repository chache
+cmd_update () {
+	for i in $(ls $confdir/repos | grep -v '!'); do
+		cmd_update_repository $i 
+	done
+
+	echo "Done"
+}
+
+# Updates a single repository
+# $1 = repository to update
+cmd_update_repository () {
+	# Cache maitainance
+	mkdir -p $cachedir/repocache
+	rm -f $cachedir/repocache/$1
+
+	# Do the updating
+	source $confdir/repos/$1
+	echo "Updating $name"
+
+	ftp -n $server > /tmp/repodata << EOT
+user anonymous password
+cd $directory
+ls
+exit	
+EOT
+
+	while read i; do
+		if [ $(echo $i | cut -c1) = "d" ]; then
+			echo $i | awk '{ print $9 }' >> $cachedir/repocache/$name
+		fi
+	done </tmp/repodata
+
+}
+
+# Checks that the cache is present. If it is not, exits with value 1
+check_cache () {
+	if [ ! -d $cachedir/repocache ]; then
+		echo "Your repository cache is corrupt or doesn't exist. Try running $0 update first."
+		exit 1
+	fi
+}
+
+# Gets the repository containing a given package
+# $1 = package
+get_repository () {
+	for i in $(ls $confdir/repos | grep -v '!'); do
+		source $confdir/repos/$i
+
+		for i2 in $(cat $cachedir/repocache/$i); do
+			if [[ "$i2" == "$1" ]]; then
+				echo "$i"
+				return
+			fi
+		done
+	done
+
+}
+
+# Downloads a package from a given repository
+# $1 = package to download
+# $2 = repository to download from
+cmd_download () {
+	# Remove the previous download
+	rm -rf /tmp/$1.tar.gz
+
+	# Download the new file
+	if [ $# -lt 2 ]; then
+		repo=$(get_repository $1)
+	else
+		repo=$2
+	fi
+
+	source $confdir/repos/$repo
+	
+	cd /tmp
+
+	# Download via FTP
+	if [ -z $http ]; then
+		ftp -n $server > /dev/null 2> /dev/null << EOT
+user anonymous password
+cd $directory
+get $1.tar.gz
+exit	
+EOT
+	# Download via HTTP
+	else
+		wget $server/slackbuilds$directory/$1.tar.gz
+	fi
+
+	cd $OLDPWD
+
+	if [ ! -e /tmp/$1.tar.gz ]; then
+		echo "Error downloading $1 from ftp://$server$directory"
+		exit 1
+	fi
+}
+
+# Builds a package
+# $1 = package to build
+build_package () {
+	# Save the working directory
+	ORIGINALPWD=$PWD
+
+	# Remove the previous build
+	rm -rf /tmp/$1
+
+	# Extract the tarball
+	cd /tmp
+	tar -xf $1.tar.gz
+	cd $1
+
+	# Load package information
+	source $1.info
+
+	# If specified, update the .info file to download an alternate version
+	if [ ! -z $version ]; then
+		echo Changing version from $VERSION to $version
+		sed -i "s/$VERSION/$version/g" $1.info
+		source $1.info
+	fi
+
+	# Download the necessary files
+	if [ "$(uname -m)" = "x86_64" -a ! -z $DOWNLOAD_x86_64 -a -z $x86 ]; then
+		for i in $DOWNLOAD_x86_64; do
+			wget $i
+		done
+	else
+		for i in $DOWNLOAD; do
+			wget $i
+		done
+	fi
+
+	# Do the build (as per the slackbuilds.org instructions)
+	source /etc/profile
+	chmod +x $1.SlackBuild
+	VERSION=$VERSION ./$1.SlackBuild
+
+	# Change back to original working directory
+	cd $ORIGINALPWD
+
+	# Check that the package was built successfully
+	if [ ! -e /tmp/$1-$VERSION-*.tgz ]; then
+		echo "Error building $1"
+		exit 2
+	fi
+}
+
+# Installs a package from /tmp
+# $1 = package to install
+install_package () {
+	source /tmp/$1/$1.info
+	pkgname=$(ls /tmp | grep $1-$VERSION- | grep .tgz)
+
+	echo "Installing /tmp/$pkgname"
+	installpkg /tmp/$pkgname
+}
+
+################################# MAIN PROGRAM #################################
+
+# This contains the main switch statement
+
+case "$1" in
+	"help" | "--help")
+		cmd_help
+		;;
+	"version" | "--version")
+		cmd_version
+		;;
+	"build")
+		cmd_download $2 $3
+		build_package $2
+		;;
+	"download")
+		cmd_download $2 $3
+		;;
+	"info")
+		cmd_info $2 $3
+		;;
+	"install")
+		cmd_download $2 $3
+		build_package $2
+		install_package $2
+		;;
+	"list-repos")
+		cmd_list_repos
+		;;
+	"search")
+		cmd_search $2
+		;;
+	"update")
+		cmd_update
+		;;
+	*)
+		echo "Invalid command. See $0 --help for a list of valid commands."
+esac

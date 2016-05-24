@@ -1,0 +1,4 @@
+name="development"
+server="slackbuilds.org"
+directory="/14.1/development"
+comment="Slackbuilds.org development repository"

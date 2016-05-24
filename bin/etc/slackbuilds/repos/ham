@@ -1,0 +1,4 @@
+name="ham"
+server="slackbuilds.org"
+directory="/14.1/ham"
+comment="Slackbuilds.org ham repository"

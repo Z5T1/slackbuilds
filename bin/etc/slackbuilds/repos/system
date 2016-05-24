@@ -1,0 +1,4 @@
+name="system"
+server="slackbuilds.org"
+directory="/14.1/system"
+comment="Slackbuilds.org system repository"

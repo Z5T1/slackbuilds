@@ -1,0 +1,4 @@
+name="games"
+server="slackbuilds.org"
+directory="/14.1/games"
+comment="Slackbuilds.org games repository"

@@ -1,0 +1,4 @@
+name="libraries"
+server="slackbuilds.org"
+directory="/14.1/libraries"
+comment="Slackbuilds.org libraries repository"

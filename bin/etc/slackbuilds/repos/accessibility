@@ -1,0 +1,4 @@
+name="accessibility"
+server="slackbuilds.org"
+directory="/14.1/accessibility"
+comment="Slackbuilds.org accessibility repository"

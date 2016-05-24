@@ -1,0 +1,4 @@
+name="multimedia"
+server="slackbuilds.org"
+directory="/14.1/multimedia"
+comment="Slackbuilds.org multimedia repository"

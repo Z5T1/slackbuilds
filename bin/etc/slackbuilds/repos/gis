@@ -1,0 +1,4 @@
+name="gis"
+server="slackbuilds.org"
+directory="/14.1/gis"
+comment="Slackbuilds.org gis repository"

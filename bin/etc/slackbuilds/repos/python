@@ -1,0 +1,4 @@
+name="python"
+server="slackbuilds.org"
+directory="/14.1/python"
+comment="Slackbuilds.org python repository"

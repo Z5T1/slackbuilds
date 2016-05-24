@@ -1,0 +1,4 @@
+name="misc"
+server="slackbuilds.org"
+directory="/14.1/misc"
+comment="Slackbuilds.org misc repository"

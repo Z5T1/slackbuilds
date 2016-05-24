@@ -1,0 +1,4 @@
+name="audio"
+server="slackbuilds.org"
+directory="/14.1/audio"
+comment="Slackbuilds.org audio repository"

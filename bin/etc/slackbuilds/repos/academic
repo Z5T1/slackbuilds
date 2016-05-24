@@ -1,0 +1,4 @@
+name="academic"
+server="slackbuilds.org"
+directory="/14.1/academic"
+comment="Slackbuilds.org academic repository"

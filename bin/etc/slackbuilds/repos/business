@@ -1,0 +1,4 @@
+name="business"
+server="slackbuilds.org"
+directory="/14.1/business"
+comment="Slackbuilds.org business repository"

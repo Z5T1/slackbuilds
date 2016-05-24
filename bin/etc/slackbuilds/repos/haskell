@@ -1,0 +1,4 @@
+name="haskell"
+server="slackbuilds.org"
+directory="/14.1/haskell"
+comment="Slackbuilds.org haskell repository"

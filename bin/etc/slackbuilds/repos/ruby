@@ -1,0 +1,4 @@
+name="ruby"
+server="slackbuilds.org"
+directory="/14.1/ruby"
+comment="Slackbuilds.org ruby repository"

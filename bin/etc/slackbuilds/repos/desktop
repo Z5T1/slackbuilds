@@ -1,0 +1,4 @@
+name="desktop"
+server="slackbuilds.org"
+directory="/14.1/desktop"
+comment="Slackbuilds.org desktop repository"

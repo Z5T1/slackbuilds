@@ -1,0 +1,4 @@
+name="perl"
+server="slackbuilds.org"
+directory="/14.1/perl"
+comment="Slackbuilds.org perl repository"
