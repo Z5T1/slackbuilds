@@ -40,30 +40,20 @@ Additionally, a repository can be disabled by prepending a ! to its filename.
 
 ### Sub Commands
   help                Displays this list of subcommands
-
   version             Displays version information and exists
-
   build <package>     Build but do not install a package
-
   download <package>  Downloads the tarball for a package and saves it to /tmp,
                       but does nothing else
-
   info <package>      Displays information about a package
-
   install <package>   Build and install a package
-
   list-repos          Lists information about the currently active repositories
-
   search <string>     Searches for packages whose names contain a string
-
   update              Updates the local repository cache
 
 ### Influential Environment Variables
 x86		When set, this forces the downloading of 32 bit packages on a
 		64 bit system, even if 64 bit packages are available.
-
 http		When set, slackbuilds will use http downloads (where possible)
 		instead of ftp.
-
 version		When set, slackbuilds will build $version of the package,
 		instead of the version provided in the package.info file.
